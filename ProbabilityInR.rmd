@@ -1,0 +1,278 @@
+---
+title: "Prawdopodobienstwo w R"
+author: "Marcin Mika"
+date: "2023-01-16"
+output: html_document
+---
+
+# Zadania - część I
+
+## Zadanie 6(15)
+
+Niech zmienna losowa 𝑋 ma rozkład 𝑁(0,1). Obliczyć 𝑃(|𝑋| < 1,5).
+```{r}
+p_X <- pnorm(1.5) - (1 - pnorm(1.5))
+p_X
+```
+Prawdpopodobieństwo, że wartość bezwzględna ze zmiennej losowej X o rozkładzie normalnym N(0,1) jest mniejsza od 1,5 wynosi ok. 87%. 
+
+Aby obliczyć to prawdopodobieństwo skorzystaliśmy z funkcji pnorm, która jest funkcją dystrybunanty rozkładu normlanego. 
+
+## Zadanie 6(1)
+
+Liczba awarii pewnej maszyny w ciągu miesiąca ma rozkład Poissona z parametrem 𝜆 = 2. 
+Obliczyć prawdopodobieństwo wystąpienia w ciągu miesiąca:
+<br/>
+<br/>
+a) mniej niż 4 awarii 
+```{r}
+pa <- ppois(3, lambda = 2, lower.tail = TRUE)
+pa
+```
+Prawdpopodobieństwo, że liczba awari będzie mniejsza od 4 wynosi ok. 86%.
+<br/>
+<br/>
+b) mniej niż 2 awarii 
+```{r}
+pb <- ppois(1, lambda = 2, lower.tail = TRUE)
+pb
+```
+Prawdpopodobieństwo, że liczba awari będzie mniejsza od 2 wynosi ok. 41%.
+<br/>
+<br/>
+c) więcej niż 1 awarii 
+```{r}
+pc <- 1 - ppois(1, lambda = 2, lower.tail = TRUE)
+pc
+```
+Prawdpopodobieństwo, że liczba awari będzie większa od 1 wynosi ok. 59%.
+<br/>
+<br/>
+d) 9 lub 10 awarii
+```{r}
+p9 <- dpois(9, lambda = 2)
+p10 <- dpois(10, lambda = 2)
+pd <- p9 + p10
+pd
+```
+Prawdpopodobieństwo, że liczba awari będzie równa 9 lub dziesięć wynosi ok. 0,02%.
+<br/>
+<br/>
+Do obliczeń skorzystaliśmy z funkcji ppois, która oblicza wartość funkcji gęstości prawdopodobieństwa (PDF) dla rozkładu Poissona dla danego argumentu. Argumentem jest liczba sukcesów, a parametrem jest oczekiwana liczba sukcesów. Funkcja ta pozwala na obliczenie prawdopodobieństwa, że liczba sukcesów jest równa danej liczbie lub mniejsza od niej.
+
+# Zadania - cześć II
+
+## Zadanie 6 
+
+Średnio co 20 pasażer wsiadający do autobusu na pewnym przystanku kupuje bilet 
+w automacie. Wiedząc, że dziennie z tego przystanku odjeżdża 700 osób obliczyć jakie jest 
+prawdopodobieństwo, że kaseta załadowanego do automatu biletowego zawierająca 
+1000 biletów wystarczy na co najmniej 4 tygodnie?
+<br/>
+
+### Twierdzenie de Moivre'a-Laplace'a
+```{r}
+p <- 0.05
+q <- 0.95
+n <- 4 * 7 * 700
+# Obliczanie prawdopodobieństwa, że liczba "sukcesów" jest mniejsza niż 1000
+pML <- pbinom(1000, size = n, prob = p, lower.tail = TRUE)
+pML
+```
+Prawdpopodobieństwo, że 1000 wystarczy na co najmniej 4 tygodnie wynosi ok. 75%
+<br/>
+<br/>
+Aby obliczyć prawdopodobieństwo, że liczba sukcesów (X) w serii 19600 prób z prawdopodobieństwem sukcesu p = 0.05 i prawdopodobieństwem niepowodzenia q = 0.95 jest mniejsza niż 1000, możemy skorzystać z funkcji "pbinom" w R. Wyświetli on wartość prawdopodobieństwa, że liczba sukcesów (X) jest mniejsza niż 1000 dla serii 19600 prób z prawdopodobieństwem sukcesu p = 0.05 i prawdopodobieństwem niepowodzenia q = 0.95.
+
+### Metoda Monte Carlo
+```{r}
+# symulacja prób
+X <- rbinom(10^6, size=n, prob=p)
+
+# liczenie ilości prób gdzie liczba sukcesów jest mniejsza niż 1000
+Xsum <- sum(X < 1000)
+
+# prawdopodobieństwo
+pMC <- Xsum / length(X)
+pMC
+```
+Prawdopodobieństwo obliczone przy pomocy metody Monte Carlo to ok. 74%
+<br/>
+<br/>
+Aby obliczyć prawdopodobieństwo, że liczba sukcesów (X) w serii 19600 prób z prawdopodobieństwem sukcesu p = 0.05 jest mniejsza niż 1000, możemy skorzystać z symulacji Monte Carlo w R. Funkcja rbinom(n,size,prob) generuje n losowych liczb z rozkładu binomialnego. W tym przypadku generuje 10^6 liczb z rozkładu binomialnego o n = 19600 próbach i p = 0.05. Następnie sumujemy te liczby które są mniejsze niż 1000 i dzielimy je przez liczbę wygenerowanych liczb, daje to prawdopodobieństwo.
+
+## Zadanie 26
+
+Długość autostrady budowanej przez pewną firmę w ciągu jednego dnia jest zmienną 
+losową o wartości oczekiwanej 0,8km i odchyleniu stand. 1km. Jakie jest 
+prawdopodobieństwo, że w ciągu 90 dni firma ta wybuduje co najmniej 75 km 
+autostrady?
+
+### Centralne twierdzenie graniczne – twierdzenie Lindeberga – Levy’ego
+```{r}
+n <- 90
+m <- 0.8*n
+s <- sqrt(n)
+1 - pnorm(75, mean=m, sd=s)
+```
+Prawdpopodobieństwo, że firma wybuduje w ciągu 90 dni co najmniej 75 km autostrady wynosi ok. 38%
+<br/>
+<br/>
+Aby obliczyć to prawdopodobieństwo, należy użyć funkcji pnorm() w R. Długość autostrady budowanej przez firmę w ciągu 90 dni jest sumą 90 losowych zmiennych, które mają wartość oczekiwaną 0,8km i odchylenie standardowe 1km. Suma takich zmiennych jest rozkładem normalnym o wartości oczekiwanej 90 * 0.8 = 72km i odchyleniu standardowym sqrt(90)*1=9,5km. Aby obliczyć prawdopodobieństwo, że długość autostrady jest co najmniej 75 km, należy obliczyć P(X >= 75), gdzie X jest zmienną losową opisaną powyżej
+
+### Metoda Monte Carlo 
+```{r}
+N <- 100000 # liczba symulacji
+count <- 0 # licznik sum większych od 75km
+
+for (i in 1:N) {
+  daily_lengths <- rnorm(90, mean = 0.8, sd = 1)
+  total_length <- sum(daily_lengths)
+  if (total_length >= 75) {
+    count <- count + 1
+  }
+}
+
+prob <- count / N
+prob
+```
+Prawdopodobieństwo użyte przy pomocy metody Monte Carlo to ok. 38%
+
+# Zadania - część III
+
+## Zadanie 10 (Test dla jednej wartości średniej)
+
+Norma przewiduje, że na kotlet na stołówce studenckiej powinien ważyć 120 g . W celu 
+zbadania, czy rzeczywiście tak jest zważono 30 wydawanych kotletów. Uzyskano 
+następujące rezultaty: średnia waga kotleta: 115g, odchylenie standardowe = 30g. Na 
+poziomie istotności 𝛼 = 0,05 zweryfikować hipotezę o zgodności wagi wydawanych 
+kotletów, gdy hipotezą alternatywną jest, że podawane studentom kotlety ważą mniej niż 
+przewiduje norma. 
+
+```{r}
+pv <- stat <- c()
+for (i in 1:10000){
+torebki<-rnorm(30, mean=115, sd = 30 )
+(test <- t.test(torebki, mu=120, alternative="less"))
+pv[i] = test$p.value
+stat[i] = test$statistic
+}
+sum(pv<0.05)/10000
+```
+Wartość Alfa jest mniejsza od p-value, co oznacza, że nie ma podstaw do odrzucenia hiptezy H0, tj. przewidywana norma dot. wagi kotletów na poziomie istotności Alfa = 0.05 jest odpowiednia 
+<br/>
+<br/>
+Ten kod tworzy pętlę, która jest wykonywana 10000 razy. W każdej iteracji pętli tworzona jest nowa próbka losowych liczb z rozkładu normalnego o średniej 115 i odchyleniu standardowym 30.
+Następnie, próbka jest testowana przeciwko hipotezie zerowej, że średnia jest równa 120, przy użyciu testu t-Studenta dla jednej próby z hipotezą alternatywną, że średnia jest mniejsza niż 120.
+Wynik testu (zawierający statystykę testową i p-value) jest zapisywany w zmiennej "test".
+Następnie wartość p-value jest zapisywana w tablicy "pv", a statystyka testowa jest zapisywana w tablicy "stat"
+Po zakończeniu pętli, kod liczy liczbę iteracji, w których p-value jest mniejsze niż 0.05:
+sum(pv<0.05)
+Ten kod jest przykładem symulacji p-hackingu, który polega na manipulowaniu danymi lub metodami statystycznymi, aby uzyskać statystycznie istotne wyniki, bez odpowiedniej analizy.
+
+## Zadanie 13 (Test dla dwóch wartości średnich)
+
+25 osobowa grupa wylosowana spośród zdających egzamin z RPiSM w poprzednim roku 
+uzyskała w I terminie średnią liczbę punktów 26,7 przy odchyleniu stand. 8,7. 27 osobowa 
+grupa wylosowana spośród zdających egzamin z RPiSM w zeszłym roku uzyskała w II 
+terminie średnią liczbę punktów 25,3 przy odchyleniu stand. 9,5. Czy na tej podstawie 
+można stwierdzić, że wartość oczekiwana liczby punktów z kolejnych terminów egzaminu 
+z RPiSM nie różni się istotnie? Jakie założenia należy przyjąć w tym teście? 
+```{r}
+pv <- stat <- c()
+for (i in 1:10000){
+  term_1 <- c(rnorm(25, mean = 26.7, sd = 8.7))
+  term_2 <- c(rnorm(27, mean = 25.3, sd = 9.5))
+  t_test <- t.test(term_1, term_2, alternative = "two.sided", var.equal = TRUE, conf.level = 0.95)
+  pv[i] = t_test$p.value
+  stat[i] = t_test$statistic
+}
+sum(pv<0.05)/10000
+ 
+```
+Rnorm(25, mean = 26.7, sd = 8.7) to wektor zawierający losowo wygenerowane wartości z pierwszego terminu zgodnie z podanymi parametrami, rnorm(27, mean = 25.3, sd = 9.5) to wektor zawierający losowo wygenerowane wartości z drugiego terminu zgodnie z podanymi parametrami, alternative = "two.sided" oznacza, że jest to test dwustronny.
+Wartość p-wartości pomoże stwierdzić, czy różnica między średnimi liczbą punktów z kolejnych terminów egzaminu z RPiSM jest istotna statystycznie. Jeśli wartość p-wartości jest mniejsza niż poziom istotności (np. 0.05), to można odrzucić hipotezę zerową i stwierdzić, że wartość oczekiwana liczby punktów z kolejnych terminów egzaminu z RPiSM różni się istotnie.
+<br/>
+<br/>
+wartość Alfa = 0.05 jest większa od p-value, co oznacza, że nie ma przesłanek aby odrzucić hipotezę 0 
+
+## Zadanie 29 (Test dla jednej frakcji)
+
+W trakcie badania skuteczności działania pewnej pasty do zębów 103 spośród 130 
+dentystów biorących w nim udział wyraziło swoje pozytywne opinie. Czy na tej podstawie 
+można twierdzić, że tę pastę poleca ponad 3/4 dentystów w Polsce?
+```{r}
+# Dane
+rozwiazanie_problemu <- 103
+grupa <- 130
+prawdopodobienstwo <- 0.75
+
+# Test proporcji
+result <- prop.test(rozwiazanie_problemu, grupa, alternative = "greater", p = prawdopodobienstwo)
+result$p.value
+```
+Nie można twierdzić, że tę pastę poleca ponad 3/4 dentystów w Polsce na podstawie badania skuteczności działania, którego uczestniczyło jedynie 103 spośród 130 dentystów biorących w nim udział. Aby to stwierdzić, konieczne byłoby przeprowadzenie badania na większej próbie dentystów, reprezentatywnej dla całego kraju.
+
+103 to liczba sukcesów (pozytywnych opinii), 130 to liczba prób (wszystkich dentystów biorących udział w badaniu), p = 0.75 to hipotetyczna proporcja sukcesów w populacji (3/4 dentystów polecających pastę), a alternative = "greater" oznacza, że jest to test jednostronny na rzecz alternatywy, że proporcja sukcesów jest większa niż 0.75.
+
+## Zadanie 47 (Test dla dwóch frakcji)
+
+Tylko 90 spośród 130 ankietowanych wyraziło pozytywną opinię o jakości obsługi 
+w oddziałach pewnego banku. Te wyniki skłoniły dyrekcję do przeprowadzenia serii 
+szkoleń mających na celu poprawę jakości obsługi. Po pewnym czasie znów 
+przeprowadzono ankietę wśród klientów. Tym razem pozytywną opinię wyraziło 230 
+spośród 340 ankietowanych. Czy na tej podstawie można stwierdzić, że przeprowadzone 
+szkolenia przyczyniły się do istotnego poprawienia jakości obsługi w banku?
+```{r}
+prop.test(c(90, 230), c(130, 340), alternative = "less")
+```
+P-value (0.5866) > alfa = 0.05. Nie ma podstaw do odrzucenia hipotezy H0, zatem nie można stiwerdzić, że przeprowadzone szkolenia przyczyniły się do istotnego poprawienia jakości obsługi w badanym banku.
+
+# Zadania - cześć IV
+
+## Zadanie 4 (Test zgodności)
+Z populacji pobrano 1000-elementową próbkę i wyniki jej badania ze względu na pewną 
+cechę zebrano w tabeli:
+<center>
+<br/>
+![](tabela_zad4.png){ width=600px}
+<br/>
+<br/>
+Na poziomie istotności 0,05 za pomocą testu chi-kwadrat zweryfikować hipotezę, że badana cecha ma rozkład normalny.
+
+```{r}
+observed = c(2, 273, 280, 292, 110, 34, 7, 2)
+chisq.test(observed, p=c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1), 
+            rescale.p = TRUE, simulate.p.value=TRUE, B=1000)
+```
+Funkcja ta zwróci informacje o testowanej hipotezie, wartości p oraz statystyce chi-kwadrat. Jeśli p-value jest mniejsze niż poziom istotności (0.01), oznacza to, że nie można odrzucić hipotezy zerowej, że rozkład badanej cechy jest normalny.
+W tym przypadku, p=c(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1) oznacza, że dla każdego przedziału (0-1, 1-2, 2-3, itd.) przyjmuje się, że teoretycznie oczekiwana liczność wynosi 10% całkowitej liczności próby (1000 elementów).
+To znaczy, dla każdego z przedziałów oczekiwana liczność wynosi 0.1*1000 = 100.
+Funkcja chisq.test porównuje otrzymane liczności z oczekiwanymi licznościami i sprawdza czy różnice są istotne statystycznie.
+<br/>
+<br/>
+P-value(0.000999) jest mniejsze od poziomu istotności(0.01), zatem nie możemy odrzucić hipotezy zerowej, że badana cech ma rozkład normalny.
+
+## Zadanie 12 (niezależność cech)
+
+Na podstawie 32-elementowej próby obliczono, że współczynnik korelacji pomiędzy 
+przekątną ekranu a ceną laptopa wynosi 0,65. Czy na tej podstawie można tę zależność 
+uznać za istotną na poziomie istotności 0,05?
+
+```{r}
+set.seed(4)
+count <- 0
+for(i in 1:10000){
+  x <- rnorm(32, mean = 14, sd = 2) # generowanie danych dotyczących przekątnej ekranu
+  y <- rnorm(32, mean = 1000, sd = 200) # generowanie danych dotyczących ceny laptopa
+  correlation <- cor.test(x, y, method = "pearson") # test korelacji Pearsona
+  p <- correlation$p.value # p-value
+  if (p < 0.05) count <- count + 1
+}
+count/10000
+```
+W tym przykładzie wygenerowano 32 elementową próbę danych przy użyciu rnorm dla przekątnej ekranu oraz dla ceny laptopa. Następnie zwiększyliśmy cenę laptopa o 0,65 razy przekątną ekranu, co pozwala na utworzenie zależności z korelacją 0,65.
+Funkcja cor.test() jest używana do przeprowadzenia testu korelacji Pearsona i wartości p-value jest porównywana z poziomem istotności 0,05. Jeśli wartość p jest mniejsza niż poziom istotności, można odrzucić hipotezę zerową i stwierdzić, że zależność jest istotna. W przeciwnym razie nie można stwierdzić, że zależność jest istotna..
+<br/>
+W naszym przypadku p-value = 0.0494 > Alfa = 0.05, co oznacza, że nie możemy stierdzić, że zależność jest istotna 
+
